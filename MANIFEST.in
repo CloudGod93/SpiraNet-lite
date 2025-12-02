@@ -1,1 +1,2 @@
-include src/*.so
+include README.md
+recursive-include spiranet_lite *.so

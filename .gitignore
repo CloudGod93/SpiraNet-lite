@@ -1,0 +1,59 @@
+# ============================
+# Python cache / build files
+# ============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so      # DO NOT ignore your packaged SpiraLibs .so inside spiranet_lite/
+*.dll
+*.dylib
+
+# ============================
+# Build artifacts
+# ============================
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# Wheel build leftovers
+pip-wheel-metadata/
+*.whl
+
+# ============================
+# Virtual environments
+# ============================
+.env
+.venv
+venv/
+env/
+ENV/
+*.virtualenv
+
+# Conda environment crud
+conda-meta/
+pkgs/
+
+# ============================
+# IDE / Editor junk
+# ============================
+.vscode/
+.idea/
+*.iml
+
+# ============================
+# Project-specific exclusions
+# ============================
+
+# This ensures you DO NOT accidentally ignore the actual binary you package.
+# We only ignore .so files OUTSIDE the package folder.
+!/spiranet_lite/SpiraLibs*.so
+
+# Local test scripts or temp files
+tmp/
+*.log
+
+# macOS random junk
+.DS_Store

@@ -1,0 +1,16 @@
+[project]
+name = "spiranet-lite"
+version = "0.1.0"
+description = "SpiraNetLite binary wrapper for MidWest Machine projects"
+requires-python = ">=3.10,<3.11"
+authors = [
+  { name = "MidWest Machine, LLC" }
+]
+license = { text = "Proprietary - internal MidWest Machine use only" }
+readme = "README.md"
+dependencies = [
+  "opencv-python-headless==4.8.1.78",
+  "Pillow>=10.0",
+  "pyAesCrypt>=0.4",
+  "tensorflow==2.13.*"
+]
