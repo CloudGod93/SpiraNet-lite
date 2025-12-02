@@ -23,16 +23,16 @@ No more dragging mysterious binaries between repos. No more `sys.path` hacks. No
   from spiranet_lite import SpiraNetLite
   ```
 
-- Supports Python **3.10** only (because that’s what the vendor built the binary for)
+- Supports Python **3.10** only
 
-- Bundles the dependency stack known to work with the binary, including:
+- Bundles verified dependency stack:
 
   - TensorFlow **2.13**
-  - OpenCV (headless)
+  - OpenCV (headless, fixed version)
   - Pillow
   - pyAesCrypt
 
-- Clean wheel builds via `pyproject.toml` + `setuptools`
+- Fully packaged + reproducible wheel builds through `pyproject.toml`
 
 ---
 
@@ -62,24 +62,21 @@ model = SpiraNetLite(weights_folder="/path/to/weights")
 result = model.FindFeatures(image)
 ```
 
-The interface matches the original vendor library, so existing code typically requires no changes beyond replacing the import.
+Interface matches the original vendor library.
+Your existing code basically doesn’t notice the change.
 
 ---
 
 ## **Environment Requirements**
 
-The packaged binary relies on:
+- Python **3.10**
+- TensorFlow **2.13**
+- NumPy **1.24.x**
+- OpenCV-Python-Headless **4.8.1.78**
+- Pillow ≥ 10
+- pyAesCrypt
 
-- **Python 3.10**
-- **TensorFlow 2.13.x**
-- **NumPy 1.24.x**
-- **OpenCV-Python-Headless 4.8.x**
-- **Pillow**
-- **pyAesCrypt**
-
-These are installed automatically when installing the wheel.
-
-If you’re using GPU-enabled TensorFlow, ensure your environment matches your deployment (CUDA/cuDNN versions, drivers, etc.).
+These are auto-installed when installing the wheel.
 
 ---
 
@@ -98,32 +95,96 @@ spiranet-lite/
 
 ---
 
-## **Why this exists**
+## **GitHub Actions CI**
 
-Originally, every MidWest project had its own copy of the vendor binary shoved into a random folder and imported with:
+The repository includes an optional CI workflow that automatically:
 
-```python
-sys.path.append("whatever")
-from SpiraLibs import SpiraNetLite
+- builds the wheel
+- installs it just like a real project would
+- performs a smoke test import to confirm the binary and Python modules load cleanly
+
+This prevents “it works on my machine” failures when publishing new versions or tags.
+
+### **Workflow Location**
+
+```
+.github/workflows/ci.yml
 ```
 
-That was… bad.
+### **Workflow Logic**
 
-This package:
+```yaml
+name: SpiraNet-lite CI
 
-- centralizes the binary
-- cleans up your imports
-- ensures deterministic dependency versions
-- allows reproducible builds for plant VMs
-- avoids “wait which repo has the good SpiraLibs?” chaos
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["main"]
 
-The world becomes slightly more civilized.
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install build tooling
+        run: |
+          pip install --upgrade pip
+          pip install build
+
+      - name: Build wheel + sdist
+        run: python -m build
+
+      - name: Install from dist
+        run: pip install dist/*.whl
+
+      - name: Smoke test import
+        run: python -c "from spiranet_lite import SpiraNetLite; print(SpiraNetLite)"
+```
+
+### **Triggering CI**
+
+CI runs on:
+
+- pushes to `main`
+- PRs targeting `main`
+- tags starting with `v` (e.g., `v0.1.1`)
+
+Tagging a release:
+
+```bash
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+---
+
+## **Why This Exists**
+
+Before this package, every MidWest repo kept its own stray copy of the SpiraLibs binary like a rabid alley cat.
+It was chaos.
+
+Now:
+
+- one source of truth
+- reproducible installs
+- dependency consistency
+- safe upgrades
+- CI catching breakage before deployment
+
+Everyone sleeps better.
 
 ---
 
 ## **License**
 
 Proprietary — internal MidWest Machine use only.
-Redistribution outside the company is not permitted.
 
 ---
